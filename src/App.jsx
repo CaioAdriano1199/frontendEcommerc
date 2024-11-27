@@ -21,11 +21,18 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [orderBy, setOrderBy] = useState('nome');
+  const [direction, setDirection] = useState('asc');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('/produto');
+        const response = await api.get('/produto', {
+          params: {
+            orderBy,
+            direction,
+          },
+        });
         setItens(response.data);
       } catch (err) {
         setError(err);
@@ -35,12 +42,17 @@ function App() {
     };
 
     fetchData();
-  }, []);
+  }, [orderBy, direction]);
 
   const handleTextChange = (event) => {
-    setSearchText(event.target.value); 
+    setSearchText(event.target.value);
   };
 
+  const handleSortChange = (event) => {
+    const [newOrderBy, newDirection] = event.target.value.split('_');
+    setOrderBy(newOrderBy);
+    setDirection(newDirection);
+  };
 
   const filteredItems = itens.filter(item => 
     item.nome.toLowerCase().includes(searchText.toLowerCase())
@@ -52,8 +64,21 @@ function App() {
 
       <TextBar text={searchText} onChange={handleTextChange} />
 
+      <div className="order-selector">
+        <label>Ordenar por:</label>
+        <select onChange={handleSortChange}>
+          <option value="nome_asc">Nome (A-Z)</option>
+          <option value="preco_asc">Menor valor</option>
+          <option value="preco_desc">Maior valor</option>
+        </select>
+      </div>
+
       <div className="item-list">
-        {filteredItems.length === 0 ? (
+        {loading ? (
+          <div>Carregando...</div>
+        ) : error ? (
+          <div>Erro ao carregar produtos.</div>
+        ) : filteredItems.length === 0 ? (
           <div>Não encontramos produtos com o termo "{searchText}"</div>
         ) : (
           filteredItems.map(item => (
