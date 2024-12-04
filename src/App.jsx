@@ -29,6 +29,7 @@ function App() {
       try {
         const response = await api.get('/produto', {
           params: {
+            filter: searchText,
             orderBy,
             direction,
           },
@@ -41,8 +42,12 @@ function App() {
       }
     };
 
-    fetchData();
-  }, [orderBy, direction]);
+    if(searchText == ""){
+      setItens([]);
+      setLoading(false);      
+    }else{
+    }fetchData();
+  }, [searchText,orderBy, direction]);
 
   const handleTextChange = (event) => {
     setSearchText(event.target.value);
